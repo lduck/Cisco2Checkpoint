@@ -2045,13 +2045,16 @@ class Cisco2Checkpoint(CiscoObject):
         print_msg('Merging redundant ACL rules')
         aclRules = [obj for obj in self.obj_list \
                      if isinstance(obj, CiscoACLRule)]
+        aclRulesRemovedIndices = []
         
         for i in range(0,len(aclRules)-2):
-            for j in range(i+1,len(aclRules)-2):
-                if self._areMergable(aclRules[i], aclRules[j]):
-                    self._mergeRules(aclRules[i], aclRules[j])
-                    if aclRules[j] in self.obj_list:
-                        self.removeObj(aclRules[j])
+            if i not in aclRulesRemovedIndices:
+                for j in range(i+1,len(aclRules)-2):
+                    if self._areMergable(aclRules[i], aclRules[j]):
+                        self._mergeRules(aclRules[i], aclRules[j])
+                        if aclRules[j] in self.obj_list:
+                            self.removeObj(aclRules[j])
+                            aclRulesRemovedIndices.append(j)
         self.aclRuCt = len(self.findNewObjByType(['CiscoACLRule']))
         
     def _areMergable(self, obj1, obj2):
